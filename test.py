@@ -1,5 +1,1 @@
-print("hello diniel")
-x=3
-print(x)
-c = 3934
-print (c)
+# Test code and draft to familiarize ourselves with coding using github
