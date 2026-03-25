@@ -57,13 +57,15 @@ graph_height = window_height - 180 # Ensure space between top and bottom of grap
 
 # --- Simulation parameters ---
 
-# starting population
-# pixels
-# % chance per contact
-# frames until recovery
+# placeholder values
+
+starting_pop = 100 # starting population
+radius_infect = 10 # pixels
+infection_rate = 0.2 # % chance per contact
+recovery_time = 100 # frames until recovery
 speed = 2
 fps = 60
-# frames = 1 simulation "day"
+day_frame = 60 # frames = 1 simulation "day"
 
 # --- Colors (R, G, B) ---
 
@@ -81,8 +83,8 @@ class Human:
         self.x = x
         self.y = y
         # Give random speed and direction so movement looks natural/chaotic
-        self.dx = random.uniform(-SPEED, SPEED)
-        self.dy = random.uniform(-SPEED, SPEED)
+        self.dx = random.uniform(-speed, speed)
+        self.dy = random.uniform(-speed, speed)
         # Everyone starts out healthy
         self.status = "Susceptible"
         # timer to keep track of how many frames they've been sick which will be used for recovery time/rate
@@ -105,11 +107,24 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((window_width, window_height)) # Set up the main application window using the dimensions I defined at the top
     pygame.display.set_caption("SIR Model - SARS-CoV-2 Propagation") # The text that shows up in the top bar of the window
-    clock = pygame.time.Clock() # Cap the framerate
+    clock = pygame.time.Clock() # Cap the framerate 
 
     # Fonts for the S/I/R stats
     big_font   = pygame.font.SysFont("Arial", 22, bold=True)
     small_font = pygame.font.SysFont("Arial", 16)
     title_font = pygame.font.SysFont("Arial", 20, bold=True)
+
+    # Spawn people at random positions inside the sim area
+    people = []
+    for _ in range(starting_pop):
+        x = random.randint(20, simulation_width - 20)
+        y = random.randint(90, window_height - 20)
+        people.append(Human(x, y))
+
+    # Patient zero — first person gets infected
+    people[0].status = "Infected"
+    people[0].infection_timer = 0
+
+
 
 
