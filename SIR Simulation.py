@@ -33,3 +33,18 @@
 #    * Display Title: "Modeling SARS-CoV-2 Propagation Using the SIR Model".
 #    * Display Live Counts and Day Clock.
 #    * Display Legend
+
+import math
+import pygame
+import random
+
+pygame.init()
+
+# Window Dimensions 
+
+window_width= 1280
+window_height= 720
+
+# Create the graph half and sim half
+
+simulation_width = 540
