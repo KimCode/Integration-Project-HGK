@@ -38,13 +38,19 @@ import math
 import pygame
 import random
 
-pygame.init()
+pygame.init()  # This function initializes all the modules pygame
 
 # Window Dimensions 
 
-window_width= 1280
-window_height= 720
+width= 1280
+height= 720
 
 # Create the graph half and sim half
 
 simulation_width = 540
+graph_w=width-simulation_width
+
+# create a window
+window = pygame.display.set_mode((width, height))
+pygame.display.set_caption("SIR Model simulation")
+font=pygame.font.sysfont("Arial", 20)
