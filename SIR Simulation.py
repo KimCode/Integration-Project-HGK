@@ -44,8 +44,8 @@ pygame.init()  # This function initializes all the modules pygame
 
 # ---- Window Dimensions ----
 
-width= 1280
-height= 720
+window_width= 1280
+window_height= 720
 
 # ---- Define Sim and Graph dimensions (Using variables to allow easy changes) ----
 
@@ -74,6 +74,30 @@ purple = (127,0,255)  # Susceptible
 red = (220,60,60)  # Infected
 green = (60,200,100)  # Recovered
 
+# This class acts as the blueprint for a single dot in the simulation
+class Human:
+    def __init__(self,x,y): 
+        # Set starting coordinates
+        self.x = x
+        self.y = y
+        # Give random speed and direction so movement looks natural/chaotic
+        self.dx = random.uniform(-SPEED, SPEED)
+        self.dy = random.uniform(-SPEED, SPEED)
+        # Everyone starts out healthy
+        self.status = "Susceptible"
+        # timer to keep track of how many frames they've been sick which will be used for recovery time/rate
+        self.infection_timer = 0
+    
+    # Attributing colors to dots/humans
+    def draw(self, surface): #if/elif/else loops for determining color
+        if self.status == "Susceptible":
+            color = blue
+        elif self.status == "Infected":
+            color = red
+        else:
+            color = green # Recovered since not infected or susceptible
+
+        pygame.draw.circle(surface, color,(int(self.x), int(self.y)), 6) # Actually draw the circle. I had to wrap x and y in int() because float values need to be cast to integers for Pygame's pixel grid
 
 def main():
 
