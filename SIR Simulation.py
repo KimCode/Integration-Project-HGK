@@ -40,11 +40,47 @@ import random
 
 pygame.init()
 
-# Window Dimensions 
+# ---- Constants ----
+
+# ---- Window Dimensions ----
 
 window_width= 1280
 window_height= 720
 
-# Create the graph half and sim half
+# ---- Define Sim and Graph dimensions (Using variables to allow easy changes) ----
 
-simulation_width = 540
+simulation_width = 720 # Horizontal length of simulation
+graph_x = simulation_width + 20 # Starting position in x of graph
+graph_width = window_width - simulation_width - 40 # Total window width and subtracts the space used by the simulation
+graph_y = 120
+graph_height = window_height - 180 # Ensure space between top and bottom of graph and top and bottom of window
+
+# --- Simulation parameters ---
+
+# starting population
+# pixels
+# % chance per contact
+# frames until recovery
+speed = 2
+fps = 60
+# frames = 1 simulation "day"
+
+# --- Colors (R, G, B) ---
+
+white = (255,255,255)
+background = (15,15,25)  # dark background
+simulation_background = ( 20,  20,  35)
+purple = (127,0,255)  # Susceptible
+red = (220,60,60)  # Infected
+green = (60,200,100)  # Recovered
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((window_width, window_height))
+    pygame.display.set_caption("SIR Model - SARS-CoV-2 Propagation")
+    clock = pygame.time.Clock()
+
+    # Fonts
+    big_font   = pygame.font.SysFont("Arial", 22, bold=True)
+    small_font = pygame.font.SysFont("Arial", 16)
+    title_font = pygame.font.SysFont("Arial", 20, bold=True)
