@@ -57,7 +57,7 @@ graph_height = window_height - 180 # Ensure space between top and bottom of grap
 
 # --- Simulation parameters ---
 
-# placeholder values
+# placeholder values 
 
 starting_pop = 100 # starting population
 radius_infect = 10 # pixels
