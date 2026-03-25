@@ -74,13 +74,18 @@ purple = (127,0,255)  # Susceptible
 red = (220,60,60)  # Infected
 green = (60,200,100)  # Recovered
 
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((window_width, window_height))
-    pygame.display.set_caption("SIR Model - SARS-CoV-2 Propagation")
-    clock = pygame.time.Clock()
 
-    # Fonts
+def main():
+
+    # Kick off all the Pygame internal systems so it actually runs
+    pygame.init()
+    screen = pygame.display.set_mode((window_width, window_height)) # Set up the main application window using the dimensions I defined at the top
+    pygame.display.set_caption("SIR Model - SARS-CoV-2 Propagation") # The text that shows up in the top bar of the window
+    clock = pygame.time.Clock() # Cap the framerate
+
+    # Fonts for the S/I/R stats
     big_font   = pygame.font.SysFont("Arial", 22, bold=True)
     small_font = pygame.font.SysFont("Arial", 16)
     title_font = pygame.font.SysFont("Arial", 20, bold=True)
+
+
