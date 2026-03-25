@@ -91,15 +91,27 @@ class Human:
         self.infection_timer = 0
     
     # Attributing colors to dots/humans
-    def draw(self, surface): #if/elif/else loops for determining color
+    def draw(self, surface): #if/elif/else loops for determining colour
         if self.status == "Susceptible":
-            color = blue
+            dot_colour = purple
         elif self.status == "Infected":
-            color = red
+            dot_colour = red
         else:
-            color = green # Recovered since not infected or susceptible
+            dot_colour = green # Recovered since not infected or susceptible
 
-        pygame.draw.circle(surface, color,(int(self.x), int(self.y)), 6) # Actually draw the circle. I had to wrap x and y in int() because float values need to be cast to integers for Pygame's pixel grid
+        pygame.draw.circle(surface, dot_colour,(int(self.x), int(self.y)), 6) # Actually draw the circle. I had to wrap x and y in int() because float values need to be cast to integers for Pygame's pixel grid
+    
+    # Moving and bouncing function
+    def movement(self, current_frame):
+        # Move 
+        self.x += self.dx
+        self.y += self.dy
+
+        # Bounce off the simulation walls if reach boundaries
+        if self.x < 10 or self.x > simulation_width - 10:
+            self.dx *= -1
+        if self.y < 80 or self.y > window_height - 10:
+            self.dy *= -1
 
 def main():
 
@@ -124,7 +136,36 @@ def main():
     # Patient zero — first person gets infected
     people[0].status = "Infected"
     people[0].infection_timer = 0
+    
+    frame   = 0
+    day     = 0
+    running = True
+
+    while running:
+    # Handle closing the window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+        # --- Update all people ---
+        for human in people:
+            human.movement(frame)
+
+        # --- Draw everything ---
+        screen.fill(background)
+
+        # Simulation box
+        pygame.draw.rect(screen, simulation_background, (0, 60, simulation_width, window_height - 60))
+
+        for human in people:
+            human.draw(screen)
+
+        pygame.display.flip()
+        clock.tick(fps)
+        frame += 1
+
+    pygame.quit()
 
 
-
-
+if __name__ == "__main__":
+    main()
