@@ -206,7 +206,8 @@ def main():
                 x1 = graph_x + int((i - 1) / (max_days - 1) * graph_width)
                 x2 = graph_x + int(i / (max_days - 1) * graph_width)
 
-                # draw one segment of each curve, connecting previous day to current,(x1, graph_ypos(susceptible_data[i-1])),(x2, graph_ypos(susceptible_data[i])), 2)
+                # draw one segment of each curve, connecting previous day to current
+                pygame.draw.line(screen, purple,(x1, graph_ypos(susceptible_data[i-1])),(x2, graph_ypos(susceptible_data[i])), 2)
                 pygame.draw.line(screen, red,(x1, graph_ypos(infected_data[i-1])),(x2, graph_ypos(infected_data[i])), 2)
                 pygame.draw.line(screen, green,(x1, graph_ypos(recovered_data[i-1])),(x2, graph_ypos(recovered_data[i])), 2)
         
