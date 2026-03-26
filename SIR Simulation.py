@@ -45,19 +45,19 @@ window_height = 720
 
 # sim on the left, graph on the right
 simulation_width = 720
-graph_x = simulation_width + 20
+graph_x = simulation_width + 20        # 20px gap between sim and graph
 graph_width = window_width - simulation_width - 40
 graph_y = 120
 graph_height = window_height - 180 
 
 # --- Simulation parameters ---
 starting_pop = 500
-radius_infect = 5
-infection_rate = 0.15
-recovery_time = 720   # frames
+radius_infect = 5       # pixel radius where infection can spread
+infection_rate = 0.15   # 15% chance per frame of contact
+recovery_time = 720     # frames
 speed = 1
 fps = 60
-day_frame = 60        # 60 frames = 1 day
+day_frame = 60          # 60 frames = 1 day
 
 day_cap = 60          
 
@@ -75,6 +75,7 @@ class Human:
         self.x = x
         self.y = y
         
+        # random direction and speed for each person
         self.dx = random.uniform(-speed, speed)
         self.dy = random.uniform(-speed, speed)
         
@@ -104,10 +105,12 @@ class Human:
         if self.y < 80 or self.y > window_height - 10:
             self.dy *= -1
         
+        # check if they've been sick long enough to recover
         if self.status == "Infected":
             if current_frame - self.infection_timer > recovery_time:
                 self.status = "Recovered"
 
+    # pythagorean distance between this dot and another
     def distance_to(self, other):
         return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
@@ -120,6 +123,7 @@ def main():
     small_font = pygame.font.SysFont("Arial", 16)
     title_font = pygame.font.SysFont("Arial", 20, bold=True)
 
+    # spawn everyone at a random spot inside the sim box
     people = []
     for _ in range(starting_pop):
         x = random.randint(20, simulation_width - 20)
@@ -134,6 +138,7 @@ def main():
     day     = 0
     running = True
 
+    # these store the S, I, R counts over time for the graph
     susceptible_data = [] 
     infected_data = [] 
     recovered_data = [] 
@@ -154,13 +159,16 @@ def main():
             infected     = [p for p in people if p.status == "Infected"]
             susceptible  = [p for p in people if p.status == "Susceptible"]
 
+            # check every infected person against every susceptible person
             for inf in infected:
                 for sus in susceptible:
                     if inf.distance_to(sus) < radius_infect:
+                        # random roll to decide if transmission actually happens
                         if random.random() < infection_rate:
                             sus.status = "Infected"
                             sus.infection_timer = frame
             
+            # snapshot the counts once per day
             if frame % day_frame == 0:
                 s = sum(1 for p in people if p.status == "Susceptible")
                 i = sum(1 for p in people if p.status == "Infected")
@@ -182,19 +190,23 @@ def main():
         for human in people:
             human.draw(screen)
 
+        # graph background box
         pygame.draw.rect(screen, simulation_background,(graph_x, graph_y, graph_width, graph_height))
 
+        # need at least 2 points to draw a line
         if len(susceptible_data) > 1:
             max_days = len(susceptible_data)
 
             def graph_ypos(val):
+                # converts a count into a y pixel position on the graph
                 return graph_y + graph_height - int(val / starting_pop * graph_height)
 
             for i in range(1, max_days):
+                # map day index to an x pixel position, scaling across graph_width
                 x1 = graph_x + int((i - 1) / (max_days - 1) * graph_width)
                 x2 = graph_x + int(i / (max_days - 1) * graph_width)
 
-                pygame.draw.line(screen, purple,(x1, graph_ypos(susceptible_data[i-1])),(x2, graph_ypos(susceptible_data[i])), 2)
+                # draw one segment of each curve, connecting previous day to current,(x1, graph_ypos(susceptible_data[i-1])),(x2, graph_ypos(susceptible_data[i])), 2)
                 pygame.draw.line(screen, red,(x1, graph_ypos(infected_data[i-1])),(x2, graph_ypos(infected_data[i])), 2)
                 pygame.draw.line(screen, green,(x1, graph_ypos(recovered_data[i-1])),(x2, graph_ypos(recovered_data[i])), 2)
         
@@ -203,6 +215,7 @@ def main():
             True, black)
         screen.blit(title_surf, (10, 15))
 
+        # live counters at the top
         current_susceptible = sum(1 for p in people if p.status == "Susceptible")
         current_infected = sum(1 for p in people if p.status == "Infected")
         current_recovered = sum(1 for p in people if p.status == "Recovered")
