@@ -37,6 +37,27 @@ import math
 import pygame
 import random
 
+# --- User-inputed simulation parameters ---
+
+print("=== SIR Model Setup ===")
+print("Press Enter to use the default value shown in brackets.\n")
+ 
+def prompt_int(msg, default):
+    val = input(f"{msg} [{default}]: ").strip()
+    return int(val) if val else default
+ 
+def prompt_float(msg, default):
+    val = input(f"{msg} [{default}]: ").strip()
+    return float(val) if val else default
+ 
+starting_pop   = prompt_int("Population size (50-800)", 300)
+infection_rate = prompt_float("Infection rate per contact (0.01-1.0)", 0.15)
+recovery_time  = prompt_int("Recovery time in frames (120-1800)", 720)
+radius_infect  = prompt_int("Infection radius in pixels (2-30)", 5)
+ 
+print("\nStarting simulation...")
+ 
+
 pygame.init()  
 
 # ---- Constants ----
@@ -50,11 +71,9 @@ graph_width = window_width - simulation_width - 40
 graph_y = 120
 graph_height = window_height - 180 
 
-# --- Simulation parameters ---
-starting_pop = 300
-radius_infect = 5       # pixel radius where infection can spread
-infection_rate = 0.15   # 15% chance per frame of contact
-recovery_time = 720     # frames
+
+# --- Non user inputed simulation parameters ---
+
 speed = 1
 fps = 60
 day_frame = 60          # 60 frames = 1 day
