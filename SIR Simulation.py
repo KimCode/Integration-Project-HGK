@@ -1,6 +1,5 @@
+# Pseudo code
 
-
-# Test code and draft to familiarize ourselves with coding using github
 # Setup : 
 #   * Create window (Split: Left = Simulation, Right = Graph).
 #   * Population = List of person objects.
@@ -38,102 +37,96 @@ import math
 import pygame
 import random
 
-pygame.init()  # This function initializes all the modules pygame
+pygame.init()  
 
 # ---- Constants ----
+window_width = 1280
+window_height = 720
 
-# ---- Window Dimensions ----
-
-window_width= 1280
-window_height= 720
-
-# ---- Define Sim and Graph dimensions (Using variables to allow easy changes) ----
-
-simulation_width = 720 # Horizontal length of simulation
-graph_x = simulation_width + 20 # Starting position in x of graph
-graph_width = window_width - simulation_width - 40 # Total window width and subtracts the space used by the simulation
+# sim on the left, graph on the right
+simulation_width = 720
+graph_x = simulation_width + 20
+graph_width = window_width - simulation_width - 40
 graph_y = 120
-graph_height = window_height - 180 # Ensure space between top and bottom of graph and top and bottom of window
+graph_height = window_height - 180 
 
 # --- Simulation parameters ---
-
-# placeholder values 
-
-starting_pop = 100 # starting population
-radius_infect = 10 # pixels
-infection_rate = 0.2 # % chance per contact
-recovery_time = 100 # frames until recovery
-speed = 2
+starting_pop = 500
+radius_infect = 5
+infection_rate = 0.15
+recovery_time = 720   # frames
+speed = 1
 fps = 60
-day_frame = 60 # frames = 1 simulation "day"
+day_frame = 60        # 60 frames = 1 day
+
+day_cap = 60          
 
 # --- Colors (R, G, B) ---
+white = (255, 255, 255)
+black = (0,0,0)
+background = (200, 200, 200)  
+simulation_background = (220, 220, 235)
+purple = (127, 0, 255) # Susceptible
+red = (220, 60, 60)    # Infected
+green = (60, 200, 100) # Recovered
 
-white = (255,255,255)
-background = (15,15,25)  # dark background
-simulation_background = ( 20,  20,  35)
-purple = (127,0,255)  # Susceptible
-red = (220,60,60)  # Infected
-green = (60,200,100)  # Recovered
-
-# This class acts as the blueprint for a single dot in the simulation
 class Human:
-    def __init__(self,x,y): 
-        # Set starting coordinates
+    def __init__(self, x, y): 
         self.x = x
         self.y = y
-        # Give random speed and direction so movement looks natural/chaotic
+        
         self.dx = random.uniform(-speed, speed)
         self.dy = random.uniform(-speed, speed)
-        # Everyone starts out healthy
+        
         self.status = "Susceptible"
-        # timer to keep track of how many frames they've been sick which will be used for recovery time/rate
+        
+        # tracks when they got infected so I know when to recover them
         self.infection_timer = 0
     
-    # Attributing colors to dots/humans
-    def draw(self, surface): #if/elif/else loops for determining colour
+    def draw(self, surface): 
         if self.status == "Susceptible":
             dot_colour = purple
         elif self.status == "Infected":
             dot_colour = red
         else:
-            dot_colour = green # Recovered since not infected or susceptible
+            dot_colour = green
 
-        pygame.draw.circle(surface, dot_colour,(int(self.x), int(self.y)), 6) # Actually draw the circle. I had to wrap x and y in int() because float values need to be cast to integers for Pygame's pixel grid
+        # int() because pygame freaks out with floats
+        pygame.draw.circle(surface, dot_colour, (int(self.x), int(self.y)), 6) 
     
-    # Moving and bouncing function
-    def movement(self, current_frame):
-        # Move 
+    def update(self, current_frame):
         self.x += self.dx
         self.y += self.dy
 
-        # Bounce off the simulation walls if reach boundaries
+        # bounce off walls
         if self.x < 10 or self.x > simulation_width - 10:
             self.dx *= -1
         if self.y < 80 or self.y > window_height - 10:
             self.dy *= -1
+        
+        if self.status == "Infected":
+            if current_frame - self.infection_timer > recovery_time:
+                self.status = "Recovered"
+
+    def distance_to(self, other):
+        return math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
 def main():
+    screen = pygame.display.set_mode((window_width, window_height)) 
+    pygame.display.set_caption("SIR Model - SARS-CoV-2 Propagation") 
+    clock = pygame.time.Clock()
 
-    # Kick off all the Pygame internal systems so it actually runs
-    pygame.init()
-    screen = pygame.display.set_mode((window_width, window_height)) # Set up the main application window using the dimensions I defined at the top
-    pygame.display.set_caption("SIR Model - SARS-CoV-2 Propagation") # The text that shows up in the top bar of the window
-    clock = pygame.time.Clock() # Cap the framerate 
-
-    # Fonts for the S/I/R stats
     big_font   = pygame.font.SysFont("Arial", 22, bold=True)
     small_font = pygame.font.SysFont("Arial", 16)
     title_font = pygame.font.SysFont("Arial", 20, bold=True)
 
-    # Spawn people at random positions inside the sim area
     people = []
     for _ in range(starting_pop):
         x = random.randint(20, simulation_width - 20)
         y = random.randint(90, window_height - 20)
         people.append(Human(x, y))
 
-    # Patient zero — first person gets infected
+    # patient zero
     people[0].status = "Infected"
     people[0].infection_timer = 0
     
@@ -141,31 +134,103 @@ def main():
     day     = 0
     running = True
 
+    susceptible_data = [] 
+    infected_data = [] 
+    recovered_data = [] 
+
+    # --- MAIN LOOP ---
     while running:
-    # Handle closing the window
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        # --- Update all people ---
-        for human in people:
-            human.movement(frame)
+        # freeze everything once we hit the cap
+        if day < day_cap:
+            
+            for human in people:
+                human.update(frame)
 
-        # --- Draw everything ---
+            # split into two lists so I'm not checking recovered people
+            infected     = [p for p in people if p.status == "Infected"]
+            susceptible  = [p for p in people if p.status == "Susceptible"]
+
+            for inf in infected:
+                for sus in susceptible:
+                    if inf.distance_to(sus) < radius_infect:
+                        if random.random() < infection_rate:
+                            sus.status = "Infected"
+                            sus.infection_timer = frame
+            
+            if frame % day_frame == 0:
+                s = sum(1 for p in people if p.status == "Susceptible")
+                i = sum(1 for p in people if p.status == "Infected")
+                r = sum(1 for p in people if p.status == "Recovered")
+                susceptible_data.append(s)
+                infected_data.append(i)
+                recovered_data.append(r)
+                day += 1
+            
+            frame += 1
+
+        # ==========================================
+        # DRAWING
+        # ==========================================
+        
         screen.fill(background)
-
-        # Simulation box
         pygame.draw.rect(screen, simulation_background, (0, 60, simulation_width, window_height - 60))
 
         for human in people:
             human.draw(screen)
 
+        pygame.draw.rect(screen, simulation_background,(graph_x, graph_y, graph_width, graph_height))
+
+        if len(susceptible_data) > 1:
+            max_days = len(susceptible_data)
+
+            def graph_ypos(val):
+                return graph_y + graph_height - int(val / starting_pop * graph_height)
+
+            for i in range(1, max_days):
+                x1 = graph_x + int((i - 1) / (max_days - 1) * graph_width)
+                x2 = graph_x + int(i / (max_days - 1) * graph_width)
+
+                pygame.draw.line(screen, purple,(x1, graph_ypos(susceptible_data[i-1])),(x2, graph_ypos(susceptible_data[i])), 2)
+                pygame.draw.line(screen, red,(x1, graph_ypos(infected_data[i-1])),(x2, graph_ypos(infected_data[i])), 2)
+                pygame.draw.line(screen, green,(x1, graph_ypos(recovered_data[i-1])),(x2, graph_ypos(recovered_data[i])), 2)
+        
+        title_surf = big_font.render(
+            "Modeling SARS-CoV-2 Propagation Using the SIR Model",
+            True, black)
+        screen.blit(title_surf, (10, 15))
+
+        current_susceptible = sum(1 for p in people if p.status == "Susceptible")
+        current_infected = sum(1 for p in people if p.status == "Infected")
+        current_recovered = sum(1 for p in people if p.status == "Recovered")
+
+        screen.blit(small_font.render(f"S: {current_susceptible}", True, purple),  (10,  45))
+        screen.blit(small_font.render(f"I: {current_infected}", True, red),   (70,  45))
+        screen.blit(small_font.render(f"R: {current_recovered}", True, green), (130, 45))
+        screen.blit(small_font.render(f"Day: {day}", True, black), (200, 45))
+
+        if day >= day_cap:
+            screen.blit(small_font.render("SIMULATION FINISHED", True, red), (300, 45))
+
+        screen.blit(title_font.render("SIR Graph", True, black),
+                    (graph_x, graph_y - 25))
+
+        # legend
+        lx, ly = graph_x, window_height - 55
+        pygame.draw.circle(screen, purple,  (lx + 8,   ly + 8), 6)
+        pygame.draw.circle(screen, red,   (lx + 118, ly + 8), 6)
+        pygame.draw.circle(screen, green, (lx + 208, ly + 8), 6)
+        screen.blit(small_font.render("Susceptible", True, purple),  (lx + 18,  ly))
+        screen.blit(small_font.render("Infected",    True, red),   (lx + 128, ly))
+        screen.blit(small_font.render("Recovered",   True, green), (lx + 218, ly))
+
         pygame.display.flip()
         clock.tick(fps)
-        frame += 1
 
     pygame.quit()
-
 
 if __name__ == "__main__":
     main()
