@@ -54,6 +54,7 @@ starting_pop   = prompt_int("Population size (50-800)", 300)
 infection_rate = prompt_float("Infection rate per contact (0.01-1.0)", 0.15)
 recovery_time  = prompt_int("Recovery time in frames (120-1800)", 720)
 radius_infect  = prompt_int("Infection radius in pixels (2-30)", 5)
+day_cap = prompt_int("Cap of number of days counted (50-200)", 100)
  
 print("\nStarting simulation...")
  
@@ -77,9 +78,6 @@ graph_height = window_height - 180
 speed = 1
 fps = 60
 day_frame = 60          # 60 frames = 1 day
-
-day_cap = 100          
-
 # --- Colors (R, G, B) ---
 white = (255, 255, 255)
 black = (0,0,0)
